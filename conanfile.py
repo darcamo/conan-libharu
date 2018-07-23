@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from conans import ConanFile, CMake, tools
+import shutil
+import os
 
 class LibharuConan(ConanFile):
     name = "libharu"
@@ -20,32 +22,26 @@ class LibharuConan(ConanFile):
     source_subfolder = "libharu"
     build_subfolder = "build_subfolder"
 
-    def requirements(self):
-        self.options["zlib"].shared = False
-        self.options["libpng"].shared = False
-
     def source(self):
-        git = tools.Git()
-        git.clone("https://github.com/libharu/libharu.git", branch="RELEASE_2_3_0")
-
-        tools.replace_in_file("CMakeLists.txt",
+        tools.get("https://github.com/libharu/libharu/archive/RELEASE_2_3_0.zip")
+        shutil.move("libharu-RELEASE_2_3_0", "sources")
+        tools.replace_in_file("sources/CMakeLists.txt",
                               "project(libharu C)",
                               '''project(libharu C)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()''')
-        tools.replace_in_file("CMakeLists.txt".format(self.source_subfolder),
+        tools.replace_in_file("sources/CMakeLists.txt".format(self.source_subfolder),
                               "set(LIBHPDF_MINOR 2)", "set(LIBHPDF_MINOR 3)")
 
     def build(self):
+        os.mkdir("build")
+        shutil.move("conanbuildinfo.cmake", "build/")
         cmake = CMake(self)
-        # cmake.configure(source_folder=self.source_subfolder, build_folder=self.build_subfolder)
-        cmake.configure()
+        cmake.configure(source_folder="sources", build_folder="build")
         cmake.build()
         cmake.install()
 
     def package(self):
-        self.copy("lib_license/LICENSE", dst="licenses", src=self.source_folder,
-                  ignore_case=True, keep_path=False)
         self.copy("FindLibharu.cmake", dst=".", src=self.source_folder, keep_path=False)
 
     def package_info(self):
