@@ -16,7 +16,7 @@ class LibharuConan(ConanFile):
     default_options = "shared=True"
     generators = "cmake"
     requires = ("zlib/[>=1.2.11]@conan/stable", "libpng/[>=1.6.34]@bincrafters/stable")
-    # exports = ["FindLibharu.cmake"]
+    exports = ["FindLibharu.cmake"]
     source_subfolder = "libharu"
     build_subfolder = "build_subfolder"
 
